@@ -23,6 +23,18 @@ root.AddArgument fileArgument
 let serviceNameOption = Option<string>("--serviceName", description = "The OpenTelemetry service name to use for the spans.", getDefaultValue = fun () -> "msbuild")
 root.AddOption serviceNameOption
 
+let consoleOption = Option<bool>("--console", "Log the emitted spans to the console")
+consoleOption.Arity <- ArgumentArity.Zero
+root.AddOption consoleOption
+
+let oltpEndpointOption = Option<string>("--oltp-endpoint", description = "The OpenTelemetry endpoint to use for the spans.")
+oltpEndpointOption.Arity <- ArgumentArity.ExactlyOne
+root.AddOption oltpEndpointOption
+
+let zipkinEndpointOption = Option<string>("--zipkin-endpoint", description = "The Zipkin endpoint to use for the spans.")
+zipkinEndpointOption.Arity <- ArgumentArity.ExactlyOne
+root.AddOption zipkinEndpointOption
+
 let version = 
     string (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version)
 
@@ -39,20 +51,29 @@ let binder f =
 
 let makeTracer (ctx: BindingContext) =
     let serviceName = ctx.ParseResult.GetValueForOption serviceNameOption
+    let useConsole = ctx.ParseResult.GetValueForOption consoleOption
+    let useZipkin = ctx.ParseResult.HasOption zipkinEndpointOption
+    let useOltp = ctx.ParseResult.HasOption oltpEndpointOption
 
-    Sdk.CreateTracerProviderBuilder()
-        .AddSource("msbuild")
-        .SetSampler(AlwaysOnSampler()) // want to send every span
-        .SetResourceBuilder(
-            ResourceBuilder.CreateDefault()
-                .AddService(serviceName = serviceName, serviceVersion = version))
-        // todo: remove this
-        .AddConsoleExporter()
-        .AddZipkinExporter(fun o -> 
-            o.Endpoint <- System.Uri "http://localhost:9411/api/v2/spans"
+    let mutable builder = 
+        Sdk.CreateTracerProviderBuilder()
+            .AddSource("msbuild")
+            .SetSampler(AlwaysOnSampler()) // want to send every span
+            .SetResourceBuilder(
+                ResourceBuilder.CreateDefault()
+                    .AddService(serviceName = serviceName, serviceVersion = version))
+    if useConsole then 
+        builder <- builder.AddConsoleExporter()
+    if useZipkin then 
+        builder <- builder.AddZipkinExporter(fun o -> 
+            o.Endpoint <- System.Uri (ctx.ParseResult.GetValueForOption zipkinEndpointOption)
             o.ExportProcessorType <- ExportProcessorType.Batch
-            o.BatchExportProcessorOptions <- BatchExportProcessorOptions()
         )
+    if useOltp then 
+        builder <- builder.AddOtlpExporter(fun o -> 
+            o.Endpoint <- System.Uri (ctx.ParseResult.GetValueForOption oltpEndpointOption)
+        )
+    builder
         .Build()
         .GetTracer(serviceName, version)
 
