@@ -10,6 +10,7 @@ open System.CommandLine.Binding
 open System.CommandLine.Builder
 open System.CommandLine.Parsing
 open System.IO
+open System.Threading
 
 let file = System.IO.Path.Combine (__SOURCE_DIRECTORY__,  "msbuild.binlog")
 
@@ -39,6 +40,8 @@ let version =
     string (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version)
 
 let upload (filePath: FileInfo) (tracer: Tracer) = 
+    if not filePath.Exists then failwithf $"File {filePath.FullName} does not exist"
+
     Ingest.read filePath.FullName
     |> Ingest.analyze
     |> Ingest.upload tracer
@@ -67,26 +70,30 @@ let makeTracer (ctx: BindingContext) =
     if useZipkin then 
         builder <- builder.AddZipkinExporter(fun o -> 
             o.Endpoint <- System.Uri (ctx.ParseResult.GetValueForOption zipkinEndpointOption)
-            o.ExportProcessorType <- ExportProcessorType.Batch
         )
     if useOltp then 
         builder <- builder.AddOtlpExporter(fun o -> 
             o.Endpoint <- System.Uri (ctx.ParseResult.GetValueForOption oltpEndpointOption)
         )
-    builder
-        .Build()
-        .GetTracer(serviceName, version)
+    let provider = 
+        builder.Build()
+    
+    (ctx.GetService(typeof<CancellationToken>) :?> CancellationToken).Register (fun _ -> provider.ForceFlush(Timeout.Infinite) |> ignore<bool>) |> ignore
+
+    provider.GetTracer(serviceName, version)
 
 root.SetHandler(upload, fileArgument, binder makeTracer)
 
 [<EntryPoint>]
 let main argv =
-    CommandLineBuilder(root)
-        .UseParseErrorReporting(1)
-        .UseSuggestDirective()
-        .CancelOnProcessTermination()
-        .RegisterWithDotnetSuggest()
-        .UseHelp()
-        .Build()
-        .Parse(argv)
-        .Invoke()
+    let result = 
+        CommandLineBuilder(root)
+            .UseParseErrorReporting(1)
+            .UseSuggestDirective()
+            .RegisterWithDotnetSuggest()
+            .UseHelp()
+            .Build()
+            .Parse(argv)
+            .Invoke()
+    System.Threading.Thread.Sleep 2000 // TODO: right way to hook into application lifetime to force the provider to flush.
+    result
