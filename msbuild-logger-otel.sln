@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{17FA0040-A716-41D7-8CFD-75848B3B16FC}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "msbuild.otel.harness", "src\msbuild.otel.harness\msbuild.otel.harness.fsproj", "{9580FB48-E693-4D6E-8C89-BED719AA014E}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "msbuild.otel", "src\msbuild.otel\msbuild.otel.fsproj", "{E1018BC9-92AA-4E2B-B5C2-3199DD57EAF8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9580FB48-E693-4D6E-8C89-BED719AA014E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9580FB48-E693-4D6E-8C89-BED719AA014E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9580FB48-E693-4D6E-8C89-BED719AA014E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9580FB48-E693-4D6E-8C89-BED719AA014E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1018BC9-92AA-4E2B-B5C2-3199DD57EAF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1018BC9-92AA-4E2B-B5C2-3199DD57EAF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1018BC9-92AA-4E2B-B5C2-3199DD57EAF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1018BC9-92AA-4E2B-B5C2-3199DD57EAF8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9580FB48-E693-4D6E-8C89-BED719AA014E} = {17FA0040-A716-41D7-8CFD-75848B3B16FC}
+		{E1018BC9-92AA-4E2B-B5C2-3199DD57EAF8} = {17FA0040-A716-41D7-8CFD-75848B3B16FC}
+	EndGlobalSection
+EndGlobal
