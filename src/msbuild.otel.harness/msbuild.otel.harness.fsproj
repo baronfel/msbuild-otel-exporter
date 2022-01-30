@@ -4,7 +4,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <PackAsTool>true</PackAsTool>
-    
+    <ToolCommandName>msbsl-otel</ToolCommandName>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.1.1" PrivateAssets="all" />
     <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.1.0" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.1.0" />
     <PackageReference Include="OpenTelemetry.Exporter.Zipkin" Version="1.1.0" />

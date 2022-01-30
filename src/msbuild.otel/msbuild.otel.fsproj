@@ -10,6 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Ionide.KeepAChangelog.Tasks" Version="0.1.1" PrivateAssets="all"/>
     <PackageReference Include="MSBuild.StructuredLogger" Version="2.1.545" />
     <PackageReference Include="OpenTelemetry.Api" Version="1.2.0-rc1" />
   </ItemGroup>

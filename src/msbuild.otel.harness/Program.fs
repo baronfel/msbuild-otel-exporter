@@ -39,13 +39,15 @@ root.AddOption zipkinEndpointOption
 let version = 
     string (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version)
 
-let upload (filePath: FileInfo) (tracer: Tracer) = 
+let upload (filePath: FileInfo) (serviceName: string) (tracerP: TracerProvider) = 
     if not filePath.Exists then failwithf $"File {filePath.FullName} does not exist"
 
+    let tracer = tracerP.GetTracer(serviceName, version)
     Ingest.read filePath.FullName
     |> Ingest.analyze
     |> Ingest.upload tracer
 
+    tracerP.ForceFlush() |> ignore
 
 let binder f = 
     { new BinderBase<'t>() with 
@@ -65,6 +67,7 @@ let makeTracer (ctx: BindingContext) =
             .SetResourceBuilder(
                 ResourceBuilder.CreateDefault()
                     .AddService(serviceName = serviceName, serviceVersion = version))
+
     if useConsole then 
         builder <- builder.AddConsoleExporter()
     if useZipkin then 
@@ -75,25 +78,18 @@ let makeTracer (ctx: BindingContext) =
         builder <- builder.AddOtlpExporter(fun o -> 
             o.Endpoint <- System.Uri (ctx.ParseResult.GetValueForOption oltpEndpointOption)
         )
-    let provider = 
-        builder.Build()
-    
-    (ctx.GetService(typeof<CancellationToken>) :?> CancellationToken).Register (fun _ -> provider.ForceFlush(Timeout.Infinite) |> ignore<bool>) |> ignore
 
-    provider.GetTracer(serviceName, version)
+    builder.Build()
 
-root.SetHandler(upload, fileArgument, binder makeTracer)
+root.SetHandler(upload, fileArgument, serviceNameOption, binder makeTracer)
 
 [<EntryPoint>]
 let main argv =
-    let result = 
-        CommandLineBuilder(root)
-            .UseParseErrorReporting(1)
-            .UseSuggestDirective()
-            .RegisterWithDotnetSuggest()
-            .UseHelp()
-            .Build()
-            .Parse(argv)
-            .Invoke()
-    System.Threading.Thread.Sleep 2000 // TODO: right way to hook into application lifetime to force the provider to flush.
-    result
+    CommandLineBuilder(root)
+        .UseParseErrorReporting(1)
+        .UseSuggestDirective()
+        .RegisterWithDotnetSuggest()
+        .UseHelp()
+        .Build()
+        .Parse(argv)
+        .Invoke()
