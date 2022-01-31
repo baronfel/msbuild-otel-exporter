@@ -6,6 +6,8 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>msbsl-otel</ToolCommandName>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>Translates MSBuild structured log files to OpenTelemetry spans</Description>
+    <Title>MSBuild Structured Log Exporter for OpenTelemetry</Title>
   </PropertyGroup>
 
   <ItemGroup>

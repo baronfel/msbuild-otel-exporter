@@ -3,15 +3,15 @@
 ## Table of Contents
 
 - [About](#about)
-- [Getting Started](#getting_started)
+- [Getting Started](#getting-started)
 - [Usage](#usage)
 - [Contributing](../CONTRIBUTING.md)
 
-## About <a name = "about"></a>
+## About
 
 This project provides an library for parsing MSBuild Structured logs, as well as a dotnet tool for performing that same task.
 
-## Getting Started <a name = "getting_started"></a>
+## Getting Started
 
 ### Prerequisites
 
@@ -21,7 +21,7 @@ You'll need the dotnet SDK version 6.0 or greater installed to run the dotnet to
 
 Install the tool with `dotnet tool install msbuild.otel.harness` (NAME TBD)
 
-## Usage <a name = "usage"></a>
+## Usage
 
 See the `--help` output for details, but the gist is that you can specify any of 3 exporters:
 

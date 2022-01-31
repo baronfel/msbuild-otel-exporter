@@ -1,5 +1,12 @@
 <Project>
     <PropertyGroup>
         <ChangelogFile>$(MSBuildThisFileDirectory)CHANGELOG.md</ChangelogFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Authors>Chet Husk</Authors>
+        <PackageTags>OpenTelemetry,msbuild,structured logs</PackageTags>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" CopyToOutputDirectory="CopyIfNewer" PackagePath="/" />
+    </ItemGroup>
 </Project>
