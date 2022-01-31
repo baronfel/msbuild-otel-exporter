@@ -28,7 +28,7 @@ See the `--help` output for details, but the gist is that you can specify any of
 * `--console`, to emit spans to stdout
 * `--zipkin-endpoint <endpoint>`, to emit spans to a zipkin instance, or
 * `--oltp-endpoint <endpoint>`, to emit spans to an OLTP-compatible instance
-
+* `--oltp-header <oltp=header>`, to emit additional headers to an OLTP-compatible instance (for example authentication headers)
 
 Full Help:
 
@@ -46,6 +46,7 @@ Options:
   --serviceName <serviceName>          The OpenTelemetry service name to use for the spans. [default: msbuild]
   --console                            Log the emitted spans to the console
   --oltp-endpoint <oltp-endpoint>      The OpenTelemetry endpoint to use for the spans.
+  --oltp-header <oltp-header>          Allows for adding arbitrary headers in a key=value format. Use this option multiple times for multiple header values.
   --zipkin-endpoint <zipkin-endpoint>  The Zipkin endpoint to use for the spans.
   -?, -h, --help                       Show help and usage information
 ```

@@ -32,9 +32,15 @@ let oltpEndpointOption = Option<string>("--oltp-endpoint", description = "The Op
 oltpEndpointOption.Arity <- ArgumentArity.ExactlyOne
 root.AddOption oltpEndpointOption
 
+let oltpHeaderOption = Option<string[]>("--oltp-header", description = "Allows for adding arbitrary headers in a key=value format. Use this option multiple times for multiple header values.")
+oltpHeaderOption.Arity <- ArgumentArity.ZeroOrMore
+oltpHeaderOption.AllowMultipleArgumentsPerToken <- false
+root.AddOption oltpHeaderOption
+
 let zipkinEndpointOption = Option<string>("--zipkin-endpoint", description = "The Zipkin endpoint to use for the spans.")
 zipkinEndpointOption.Arity <- ArgumentArity.ExactlyOne
 root.AddOption zipkinEndpointOption
+
 
 let version = 
     string (System.Reflection.Assembly.GetExecutingAssembly().GetName().Version)
@@ -59,6 +65,7 @@ let makeTracer (ctx: BindingContext) =
     let useConsole = ctx.ParseResult.GetValueForOption consoleOption
     let useZipkin = ctx.ParseResult.HasOption zipkinEndpointOption
     let useOltp = ctx.ParseResult.HasOption oltpEndpointOption
+    let oltpHeaders = ctx.ParseResult.GetValueForOption oltpHeaderOption
 
     let mutable builder = 
         Sdk.CreateTracerProviderBuilder()
@@ -77,6 +84,7 @@ let makeTracer (ctx: BindingContext) =
     if useOltp then 
         builder <- builder.AddOtlpExporter(fun o -> 
             o.Endpoint <- System.Uri (ctx.ParseResult.GetValueForOption oltpEndpointOption)
+            o.Headers <- String.concat "," oltpHeaders
         )
 
     builder.Build()
