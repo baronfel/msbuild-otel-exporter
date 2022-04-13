@@ -50,3 +50,11 @@ Options:
   --zipkin-endpoint <zipkin-endpoint>  The Zipkin endpoint to use for the spans.
   -?, -h, --help                       Show help and usage information
 ```
+
+### Zipkin Endpoint
+
+To upload to zipkin you'll need to use the full url, for example: `http://localhost:9411/api/v2/spans`
+
+```bash
+dotnet msbsl-otel  msbuild.binlog --zipkin-endpoint http://localhost:9411/api/v2/spans
+```
