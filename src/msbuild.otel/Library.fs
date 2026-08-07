@@ -9,15 +9,7 @@ open System.Collections.Generic
 module Ingest =
     open System.Diagnostics
     
-    let read filePath =
-        try
-            Serialization.Read filePath
-        with
-        | ex ->
-            let b = Build(Succeeded = false)
-            b.AddChild(Error(Text = "Error when openening file: " + filePath))
-            b.AddChild(Error(Text = ex.Message))
-            b
+    let read filePath = Serialization.Read filePath
 
     let analyze (b: Build) =
         BuildAnalyzer.AnalyzeBuild b
@@ -58,7 +50,7 @@ module Ingest =
         tag "msbuild.type" (string x)
 
     let parseCondition (s: string) = 
-        if s.StartsWith "false condition; (" then
+        if not (String.IsNullOrEmpty s) && s.StartsWith "false condition; (" then
             let parensedCondition = s.Substring("false condition; (".Length)
             match parensedCondition.IndexOf " was evaluated as " with
             | -1 -> 
@@ -83,7 +75,7 @@ module Ingest =
             MyActivitySource.CreateActivity("build", ActivityKind.Producer, ActivityContext(), tags = globalTags)
             |> addTimeBounds b
             |> start
-        a.SetStatus(if b.Succeeded then Status.Ok else Status.Error)
+        a.SetStatus(if b.Succeeded then ActivityStatusCode.Ok else ActivityStatusCode.Error) |> ignore
         Activity.Current <- a
         a
     
@@ -94,9 +86,9 @@ module Ingest =
         ()  
 
     and private logNoImport e (i: NoImport) = 
-        use iActivity = MyActivitySource.CreateActivity($"Skip importing {i.Name}", ActivityKind.Producer) |> sourceFilePath i |> lineNumber i |> columnNumber i|> addTimeBounds e |> setType NoImport|> start
+        use iActivity = MyActivitySource.CreateActivity($"Skip importing {i.Text}", ActivityKind.Producer) |> sourceFilePath i |> lineNumber i |> columnNumber i|> addTimeBounds e |> setType NoImport|> start
 
-        let condition, evaluated = parseCondition i.Text
+        let condition, evaluated = parseCondition i.Reason
         iActivity.AddTag("noimport.condition", condition) |> ignore
         evaluated |> Option.iter (fun e -> iActivity.AddTag("noimport.condition.evaluation", e) |> ignore)
         if i.HasChildren then 
@@ -123,13 +115,14 @@ module Ingest =
         }
 
     let private logEvaluations (e: NamedNode) =
-        let evaluations = e.Children |> Seq.choose (function | :? ProjectEvaluation as p -> Some p | _ -> None)
-        let firstEval = evaluations |> Seq.minBy (fun eval -> eval.StartTime)
-        let lastEval = evaluations |> Seq.maxBy (fun eval -> eval.EndTime)
-        let bounds = {StartTime = firstEval.StartTime; EndTime = lastEval.EndTime}
-        use evalActivity = MyActivitySource.CreateActivity("Evaluation", ActivityKind.Producer) |> addTimeBounds bounds |> start
-        for evaluation in evaluations do 
-            logEvaluation evaluation
+        let evaluations = e.Children |> Seq.choose (function | :? ProjectEvaluation as p -> Some p | _ -> None) |> Seq.toArray
+        if evaluations.Length > 0 then
+            let firstEval = evaluations |> Seq.minBy (fun eval -> eval.StartTime)
+            let lastEval = evaluations |> Seq.maxBy (fun eval -> eval.EndTime)
+            let bounds = {StartTime = firstEval.StartTime; EndTime = lastEval.EndTime}
+            use evalActivity = MyActivitySource.CreateActivity("Evaluation", ActivityKind.Producer) |> addTimeBounds bounds |> start
+            for evaluation in evaluations do
+                logEvaluation evaluation
         ()
 
     type Project with 
@@ -209,12 +202,14 @@ module Ingest =
                 logTarget target
 
     let private logExecution (p: Project seq) =
-        let firstExec = p |> Seq.minBy (fun p -> p.StartTime)
-        let lastExec = p |> Seq.maxBy (fun p -> p.EndTime)
-        let bounds = { StartTime = firstExec.StartTime; EndTime = lastExec.EndTime }
-        use execActivity = MyActivitySource.CreateActivity("Execution", ActivityKind.Producer) |> addTimeBounds bounds |> start
-        for project in p do 
-            logProject project
+        let projects = p |> Seq.toArray
+        if projects.Length > 0 then
+            let firstExec = projects |> Seq.minBy (fun p -> p.StartTime)
+            let lastExec = projects |> Seq.maxBy (fun p -> p.EndTime)
+            let bounds = { StartTime = firstExec.StartTime; EndTime = lastExec.EndTime }
+            use execActivity = MyActivitySource.CreateActivity("Execution", ActivityKind.Producer) |> addTimeBounds bounds |> start
+            for project in projects do
+                logProject project
         ()
 
 
@@ -225,4 +220,3 @@ module Ingest =
         logExecution (b.Children |> Seq.choose (function | :? Project as p ->  Some p | _ -> None))
         // traverse the build, reporting things
         ()
-

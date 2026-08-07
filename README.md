@@ -15,7 +15,7 @@ This project provides an library for parsing MSBuild Structured logs, as well as
 
 ### Prerequisites
 
-You'll need the dotnet SDK version 6.0 or greater installed to run the dotnet tool.
+You'll need the .NET 10 SDK or greater installed to run the dotnet tool.
 
 ### Installing
 
@@ -23,12 +23,11 @@ Install the tool with `dotnet tool install msbuild.otel.harness` (NAME TBD)
 
 ## Usage
 
-See the `--help` output for details, but the gist is that you can specify any of 3 exporters:
+See the `--help` output for details. You can export spans to the console or an OTLP-compatible endpoint:
 
 * `--console`, to emit spans to stdout
-* `--zipkin-endpoint <endpoint>`, to emit spans to a zipkin instance, or
-* `--oltp-endpoint <endpoint>`, to emit spans to an OLTP-compatible instance
-* `--oltp-header <oltp=header>`, to emit additional headers to an OLTP-compatible instance (for example authentication headers)
+* `--oltp-endpoint <endpoint>`, to emit spans to an OTLP-compatible instance
+* `--oltp-header <oltp=header>`, to emit additional headers to an OTLP-compatible instance (for example authentication headers)
 
 Full Help:
 
@@ -43,18 +42,19 @@ Arguments:
   <logFile>  The MSBuild structured log file to parse
 
 Options:
-  --serviceName <serviceName>          The OpenTelemetry service name to use for the spans. [default: msbuild]
-  --console                            Log the emitted spans to the console
-  --oltp-endpoint <oltp-endpoint>      The OpenTelemetry endpoint to use for the spans.
-  --oltp-header <oltp-header>          Allows for adding arbitrary headers in a key=value format. Use this option multiple times for multiple header values.
-  --zipkin-endpoint <zipkin-endpoint>  The Zipkin endpoint to use for the spans.
-  -?, -h, --help                       Show help and usage information
+  --serviceName <serviceName>      The OpenTelemetry service name to use for the spans. [default: msbuild]
+  --console                        Log the emitted spans to the console
+  --oltp-endpoint <oltp-endpoint>  The OpenTelemetry endpoint to use for the spans.
+  --oltp-header <oltp-header>      Allows for adding arbitrary headers in a key=value format. Use this option multiple times for multiple header values.
+  -?, -h, --help                   Show help and usage information
 ```
 
-### Zipkin Endpoint
+## Publishing
 
-To upload to zipkin you'll need to use the full url, for example: `http://localhost:9411/api/v2/spans`
+Configure a NuGet trusted publishing policy for `.github/workflows/release.yml`.
+Add the NuGet account name to the `NUGET_USER` repository secret.
 
-```bash
-dotnet msbsl-otel  msbuild.binlog --zipkin-endpoint http://localhost:9411/api/v2/spans
-```
+1. Move the released changes into a versioned and dated `CHANGELOG.md` section.
+2. Push a matching tag that uses the `v<version>` format, such as `v1.2.3`.
+
+The workflow publishes both NuGet packages and creates a GitHub release.

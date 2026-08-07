@@ -4,6 +4,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Authors>Chet Husk</Authors>
         <PackageTags>OpenTelemetry,msbuild,structured logs</PackageTags>
+        <UseArtifactsOutput>true</UseArtifactsOutput>
     </PropertyGroup>
 
     <ItemGroup>

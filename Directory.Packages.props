@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="Dotnet.ReproducibleBuilds" Version="2.0.5" />
+    <PackageVersion Include="Ionide.KeepAChangelog.Tasks" Version="0.1.1" />
+    <PackageVersion Include="MSBuild.StructuredLogger" Version="2.3.213" />
+    <PackageVersion Include="OpenTelemetry.Api" Version="1.17.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.17.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
+    <PackageVersion Include="System.CommandLine" Version="2.0.0-beta2.21617.1" />
+  </ItemGroup>
+</Project>

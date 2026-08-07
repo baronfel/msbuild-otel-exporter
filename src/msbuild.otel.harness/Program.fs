@@ -17,29 +17,21 @@ let file = System.IO.Path.Combine (__SOURCE_DIRECTORY__,  "msbuild.binlog")
 
 let root = RootCommand("Translates MSBuild structured log files to OpenTelemetry spans.")
 
-let fileArgument = Argument<FileInfo>("logFile", "The MSBuild structured log file to parse")
-fileArgument.Arity <- ArgumentArity.ExactlyOne
+let fileArgument = Argument<FileInfo>("logFile", "The MSBuild structured log file to parse", Arity = ArgumentArity.ExactlyOne)
 root.AddArgument fileArgument
 
 let serviceNameOption = Option<string>("--serviceName", description = "The OpenTelemetry service name to use for the spans.", getDefaultValue = fun () -> "msbuild")
 root.AddOption serviceNameOption
 
-let consoleOption = Option<bool>("--console", "Log the emitted spans to the console")
-consoleOption.Arity <- ArgumentArity.Zero
+let consoleOption = Option<bool>("--console", "Log the emitted spans to the console", Arity = ArgumentArity.Zero)
 root.AddOption consoleOption
 
-let oltpEndpointOption = Option<string>("--oltp-endpoint", description = "The OpenTelemetry endpoint to use for the spans.")
-oltpEndpointOption.Arity <- ArgumentArity.ExactlyOne
+let oltpEndpointOption = Option<string>("--oltp-endpoint", description = "The OpenTelemetry endpoint to use for the spans.", Arity = ArgumentArity.ExactlyOne)
 root.AddOption oltpEndpointOption
 
-let oltpHeaderOption = Option<string[]>("--oltp-header", description = "Allows for adding arbitrary headers in a key=value format. Use this option multiple times for multiple header values.")
-oltpHeaderOption.Arity <- ArgumentArity.ZeroOrMore
+let oltpHeaderOption = Option<string[]>("--oltp-header", description = "Allows for adding arbitrary headers in a key=value format. Use this option multiple times for multiple header values.", Arity = ArgumentArity.ZeroOrMore)
 oltpHeaderOption.AllowMultipleArgumentsPerToken <- false
 root.AddOption oltpHeaderOption
-
-let zipkinEndpointOption = Option<string>("--zipkin-endpoint", description = "The Zipkin endpoint to use for the spans.")
-zipkinEndpointOption.Arity <- ArgumentArity.ExactlyOne
-root.AddOption zipkinEndpointOption
 
 
 let version = 
@@ -63,7 +55,6 @@ let binder f =
 let makeTracer (ctx: BindingContext) =
     let serviceName = ctx.ParseResult.GetValueForOption serviceNameOption
     let useConsole = ctx.ParseResult.GetValueForOption consoleOption
-    let useZipkin = ctx.ParseResult.HasOption zipkinEndpointOption
     let useOltp = ctx.ParseResult.HasOption oltpEndpointOption
     let oltpHeaders = ctx.ParseResult.GetValueForOption oltpHeaderOption
 
@@ -77,10 +68,6 @@ let makeTracer (ctx: BindingContext) =
 
     if useConsole then 
         builder <- builder.AddConsoleExporter()
-    if useZipkin then 
-        builder <- builder.AddZipkinExporter(fun o -> 
-            o.Endpoint <- System.Uri (ctx.ParseResult.GetValueForOption zipkinEndpointOption)
-        )
     if useOltp then 
         builder <- builder.AddOtlpExporter(fun o -> 
             o.Endpoint <- System.Uri (ctx.ParseResult.GetValueForOption oltpEndpointOption)
