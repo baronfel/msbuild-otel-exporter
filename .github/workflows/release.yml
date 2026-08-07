@@ -10,8 +10,10 @@ permissions:
   id-token: write
 
 jobs:
-  release:
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
 
     steps:
       - name: Checkout
@@ -28,21 +30,32 @@ jobs:
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
+  build-packages:
+    needs: prepare
+    uses: ./.github/workflows/build-aot-packages.yml
+
+  release:
+    needs: [prepare, build-packages]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Get changelog entry
         id: changelog_reader
         uses: mindsers/changelog-reader-action@v2
         with:
           path: ./CHANGELOG.md
           validation_level: warn
-          version: ${{ steps.version.outputs.version }}
+          version: ${{ needs.prepare.outputs.version }}
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-
-      - name: Pack
-        shell: bash
-        run: |
-          dotnet pack msbuild-logger-otel.sln /bl:pack.binlog
+      - name: Download platform-specific packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: aot-packages-*
+          path: artifacts/package/release
+          merge-multiple: true
 
       - name: NuGet login
         id: login
@@ -66,9 +79,9 @@ jobs:
         with:
           allowUpdates: true
           artifactErrorsFailBuild: true
-          artifacts: artifacts/package/**/*.nupkg
+          artifacts: artifacts/package/release/*.nupkg
           bodyFile: ${{ steps.changelog_reader.outputs.changes_file }}
-          name: Release ${{ steps.version.outputs.version }}
+          name: Release ${{ needs.prepare.outputs.version }}
           prerelease: ${{ steps.changelog_reader.outputs.status == 'prereleased' }}
           tag: ${{ github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -8,6 +8,8 @@
 
 ### Changed
 
+- Publish the harness as Native AOT tool packages for Linux, Windows, and macOS on x64 and ARM64.
+- Build all Native AOT tool packages for pull requests.
 - Target .NET 10.
 - Manage direct dependency versions in `Directory.Packages.props`.
 - Update MSBuild Structured Logger and OpenTelemetry dependencies.
@@ -19,6 +21,7 @@
 
 ### Removed
 
+- Stop publishing `msbuild.otel` as a separate NuGet package.
 - Remove the deprecated Zipkin exporter.
 
 ## [0.0.1] - 2022-01-30

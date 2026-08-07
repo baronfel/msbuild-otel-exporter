@@ -5,6 +5,9 @@
     <TargetFramework>net10.0</TargetFramework>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>msbsl-otel</ToolCommandName>
+    <RuntimeIdentifiers>linux-x64;linux-arm64;win-x64;win-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
+    <PublishAot>true</PublishAot>
+    <StripSymbols>true</StripSymbols>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>Translates MSBuild structured log files to OpenTelemetry spans</Description>
     <Title>MSBuild Structured Log Exporter for OpenTelemetry</Title>
@@ -20,6 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dotnet.ReproducibleBuilds" PrivateAssets="all" />
+    <PackageReference Include="FSharp.Core" />
     <PackageReference Include="Ionide.KeepAChangelog.Tasks" PrivateAssets="all" />
     <PackageReference Include="OpenTelemetry.Exporter.Console" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />

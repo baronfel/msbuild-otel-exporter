@@ -1,0 +1,117 @@
+name: Build AOT packages
+
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+
+      - name: Install Linux ARM64 cross-compilation tools
+        shell: bash
+        run: |
+          source /etc/os-release
+          sudo dpkg --add-architecture arm64
+          sudo sed -i '/^Architectures:/d; /^Types: deb$/a Architectures: amd64' /etc/apt/sources.list.d/ubuntu.sources
+          cat <<EOF | sudo tee /etc/apt/sources.list.d/ubuntu-arm64.sources > /dev/null
+          Types: deb
+          URIs: http://ports.ubuntu.com/ubuntu-ports/
+          Suites: ${VERSION_CODENAME} ${VERSION_CODENAME}-updates ${VERSION_CODENAME}-backports
+          Components: main universe restricted multiverse
+          Architectures: arm64
+          Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+          Types: deb
+          URIs: http://ports.ubuntu.com/ubuntu-ports/
+          Suites: ${VERSION_CODENAME}-security
+          Components: main universe restricted multiverse
+          Architectures: arm64
+          Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+          EOF
+          sudo apt-get update
+          sudo apt-get install --yes clang llvm binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu zlib1g-dev zlib1g-dev:arm64
+
+      - name: Build Linux AOT packages
+        shell: bash
+        run: |
+          dotnet pack src/msbuild.otel.harness/msbuild.otel.harness.fsproj \
+            --runtime linux-x64 \
+            /bl:pack-linux-x64.binlog
+          dotnet pack src/msbuild.otel.harness/msbuild.otel.harness.fsproj \
+            --runtime linux-arm64 \
+            /bl:pack-linux-arm64.binlog
+
+      - name: Upload Linux packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: aot-packages-linux
+          path: artifacts/package/release/*.nupkg
+          retention-days: 30
+          if-no-files-found: error
+
+  build-windows:
+    runs-on: windows-2025
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+
+      - name: Build Windows AOT packages
+        shell: pwsh
+        run: |
+          dotnet pack src/msbuild.otel.harness/msbuild.otel.harness.fsproj `
+            --runtime win-x64 `
+            /bl:pack-win-x64.binlog
+          dotnet pack src/msbuild.otel.harness/msbuild.otel.harness.fsproj `
+            --runtime win-arm64 `
+            /bl:pack-win-arm64.binlog
+
+      - name: Upload Windows packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: aot-packages-windows
+          path: artifacts/package/release/*.nupkg
+          retention-days: 30
+          if-no-files-found: error
+
+  build-macos:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+
+      - name: Build macOS AOT packages
+        shell: bash
+        run: |
+          dotnet pack src/msbuild.otel.harness/msbuild.otel.harness.fsproj \
+            --runtime osx-x64 \
+            /bl:pack-osx-x64.binlog
+          dotnet pack src/msbuild.otel.harness/msbuild.otel.harness.fsproj \
+            --runtime osx-arm64 \
+            /bl:pack-osx-arm64.binlog
+
+      - name: Upload macOS packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: aot-packages-macos
+          path: artifacts/package/release/*.nupkg
+          retention-days: 30
+          if-no-files-found: error

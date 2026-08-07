@@ -5,6 +5,7 @@
 
   <ItemGroup>
     <PackageVersion Include="Dotnet.ReproducibleBuilds" Version="2.0.5" />
+    <PackageVersion Include="FSharp.Core" Version="10.1.302" />
     <PackageVersion Include="Ionide.KeepAChangelog.Tasks" Version="0.1.1" />
     <PackageVersion Include="MSBuild.StructuredLogger" Version="2.3.213" />
     <PackageVersion Include="OpenTelemetry.Api" Version="1.17.0" />

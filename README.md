@@ -9,7 +9,7 @@
 
 ## About
 
-This project provides an library for parsing MSBuild Structured logs, as well as a dotnet tool for performing that same task.
+This project provides a library for parsing MSBuild Structured logs and a Native AOT .NET tool for performing that same task.
 
 ## Getting Started
 
@@ -57,4 +57,6 @@ Add the NuGet account name to the `NUGET_USER` repository secret.
 1. Move the released changes into a versioned and dated `CHANGELOG.md` section.
 2. Push a matching tag that uses the `v<version>` format, such as `v1.2.3`.
 
-The workflow publishes both NuGet packages and creates a GitHub release.
+The workflow builds Native AOT harness packages for Linux, Windows, and macOS. It builds x64 and ARM64 packages.
+Pull requests run the same package build. Tagged releases publish the packages to NuGet and create a GitHub release.
+The `msbuild.otel` library is not packaged separately.
