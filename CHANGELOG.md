@@ -13,7 +13,7 @@
 - Exclude native debug symbols from the Native AOT packages.
 - Restore all packages from NuGet.org through package source mapping.
 - Target .NET 10.
-- Manage direct dependency versions in `Directory.Packages.props`.
+- Manage direct and transitive dependency versions in `Directory.Packages.props`.
 - Update System.CommandLine, MSBuild Structured Logger, and OpenTelemetry dependencies.
 
 ### Fixed
