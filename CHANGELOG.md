@@ -9,6 +9,7 @@
 ### Changed
 
 - Publish the harness as Native AOT tool packages for Linux, Windows, and macOS on x64 and ARM64.
+- Publish a RID-less tool package that selects the correct native package for the current platform.
 - Build the Native AOT packages with the same workflow for pull requests and releases.
 - Exclude native debug symbols from the Native AOT packages.
 - Restore all packages from NuGet.org through package source mapping.
