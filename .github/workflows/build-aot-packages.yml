@@ -52,6 +52,14 @@ jobs:
             --runtime linux-arm64 \
             /bl:pack-linux-arm64.binlog
 
+      - name: Smoke test Linux AOT binlog ingestion
+        shell: pwsh
+        run: |
+          $rid = "linux-$('${{ runner.arch }}'.ToLowerInvariant())"
+          ./tests/NativeAotSmoke/Test-NativeAotBinlog.ps1 `
+            -PackagePath (Get-Item "artifacts/package/release/*.$rid.*.nupkg") `
+            -RuntimeIdentifier $rid
+
       - name: Upload Linux packages
         uses: actions/upload-artifact@v4
         with:
@@ -80,6 +88,14 @@ jobs:
             --runtime win-arm64 `
             /bl:pack-win-arm64.binlog
 
+      - name: Smoke test Windows AOT binlog ingestion
+        shell: pwsh
+        run: |
+          $rid = "win-$('${{ runner.arch }}'.ToLowerInvariant())"
+          ./tests/NativeAotSmoke/Test-NativeAotBinlog.ps1 `
+            -PackagePath (Get-Item "artifacts/package/release/*.$rid.*.nupkg") `
+            -RuntimeIdentifier $rid
+
       - name: Upload Windows packages
         uses: actions/upload-artifact@v4
         with:
@@ -107,6 +123,14 @@ jobs:
           dotnet pack src/msbuild.otel.harness/msbuild.otel.harness.fsproj \
             --runtime osx-arm64 \
             /bl:pack-osx-arm64.binlog
+
+      - name: Smoke test macOS AOT binlog ingestion
+        shell: pwsh
+        run: |
+          $rid = "osx-$('${{ runner.arch }}'.ToLowerInvariant())"
+          ./tests/NativeAotSmoke/Test-NativeAotBinlog.ps1 `
+            -PackagePath (Get-Item "artifacts/package/release/*.$rid.*.nupkg") `
+            -RuntimeIdentifier $rid
 
       - name: Upload macOS packages
         uses: actions/upload-artifact@v4

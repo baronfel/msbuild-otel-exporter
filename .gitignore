@@ -342,6 +342,7 @@ ASALocalRun/
 
 # MSBuild Binary and Structured Log
 *.binlog
+!tests/NativeAotSmoke/fixture.binlog
 
 # NVidia Nsight GPU debugger configuration file
 *.nvuser
