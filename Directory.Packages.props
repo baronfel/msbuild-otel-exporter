@@ -11,6 +11,6 @@
     <PackageVersion Include="OpenTelemetry.Api" Version="1.17.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.17.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
-    <PackageVersion Include="System.CommandLine" Version="2.0.10" />
+    <PackageVersion Include="System.CommandLine" Version="3.0.0-preview.6.26359.118" />
   </ItemGroup>
 </Project>
