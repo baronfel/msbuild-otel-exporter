@@ -7,7 +7,9 @@
     <ToolCommandName>msbsl-otel</ToolCommandName>
     <RuntimeIdentifiers>linux-x64;linux-arm64;win-x64;win-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
     <PublishAot>true</PublishAot>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
     <StripSymbols>true</StripSymbols>
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>Translates MSBuild structured log files to OpenTelemetry spans</Description>
     <Title>MSBuild Structured Log Exporter for OpenTelemetry</Title>
@@ -19,6 +21,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\msbuild.otel\msbuild.otel.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="Microsoft.Build.Framework" />
+    <TrimmerRootAssembly Include="Microsoft.Build.Utilities.Core" />
+    <TrimmerRootAssembly Include="StructuredLogger" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,32 +6,39 @@ open OpenTelemetry.Exporter
 open OpenTelemetry.Resources
 open OpenTelemetry.Trace
 open System.CommandLine
-open System.CommandLine.Binding
-open System.CommandLine.Builder
 open System.CommandLine.Parsing
 open System.IO
-open System.Threading
 
 let file = System.IO.Path.Combine (__SOURCE_DIRECTORY__,  "msbuild.binlog")
 
 
 let root = RootCommand("Translates MSBuild structured log files to OpenTelemetry spans.")
 
-let fileArgument = Argument<FileInfo>("logFile", "The MSBuild structured log file to parse", Arity = ArgumentArity.ExactlyOne)
-root.AddArgument fileArgument
+let fileArgument = Argument<FileInfo>("logFile")
+fileArgument.Description <- "The MSBuild structured log file to parse"
+fileArgument.Arity <- ArgumentArity.ExactlyOne
+root.Arguments.Add fileArgument
 
-let serviceNameOption = Option<string>("--serviceName", description = "The OpenTelemetry service name to use for the spans.", getDefaultValue = fun () -> "msbuild")
-root.AddOption serviceNameOption
+let serviceNameOption = Option<string>("--serviceName", [||])
+serviceNameOption.Description <- "The OpenTelemetry service name to use for the spans."
+serviceNameOption.DefaultValueFactory <- fun _ -> "msbuild"
+root.Options.Add serviceNameOption
 
-let consoleOption = Option<bool>("--console", "Log the emitted spans to the console", Arity = ArgumentArity.Zero)
-root.AddOption consoleOption
+let consoleOption = Option<bool>("--console", [||])
+consoleOption.Description <- "Log the emitted spans to the console"
+consoleOption.Arity <- ArgumentArity.Zero
+root.Options.Add consoleOption
 
-let oltpEndpointOption = Option<string>("--oltp-endpoint", description = "The OpenTelemetry endpoint to use for the spans.", Arity = ArgumentArity.ExactlyOne)
-root.AddOption oltpEndpointOption
+let oltpEndpointOption = Option<string>("--oltp-endpoint", [||])
+oltpEndpointOption.Description <- "The OpenTelemetry endpoint to use for the spans."
+oltpEndpointOption.Arity <- ArgumentArity.ExactlyOne
+root.Options.Add oltpEndpointOption
 
-let oltpHeaderOption = Option<string[]>("--oltp-header", description = "Allows for adding arbitrary headers in a key=value format. Use this option multiple times for multiple header values.", Arity = ArgumentArity.ZeroOrMore)
+let oltpHeaderOption = Option<string[]>("--oltp-header", [||])
+oltpHeaderOption.Description <- "Allows for adding arbitrary headers in a key=value format. Use this option multiple times for multiple header values."
+oltpHeaderOption.Arity <- ArgumentArity.ZeroOrMore
 oltpHeaderOption.AllowMultipleArgumentsPerToken <- false
-root.AddOption oltpHeaderOption
+root.Options.Add oltpHeaderOption
 
 
 let version = 
@@ -47,16 +54,14 @@ let upload (filePath: FileInfo) (serviceName: string) (tracerP: TracerProvider) 
 
     tracerP.ForceFlush() |> ignore
 
-let binder f = 
-    { new BinderBase<'t>() with 
-        override _.GetBoundValue ctx = 
-            f ctx }
-
-let makeTracer (ctx: BindingContext) =
-    let serviceName = ctx.ParseResult.GetValueForOption serviceNameOption
-    let useConsole = ctx.ParseResult.GetValueForOption consoleOption
-    let useOltp = ctx.ParseResult.HasOption oltpEndpointOption
-    let oltpHeaders = ctx.ParseResult.GetValueForOption oltpHeaderOption
+let makeTracer (parseResult: ParseResult) =
+    let serviceName = parseResult.GetValue serviceNameOption
+    let useConsole = parseResult.GetValue consoleOption
+    let useOltp = not (isNull (parseResult.GetResult oltpEndpointOption))
+    let oltpHeaders =
+        match parseResult.GetValue oltpHeaderOption with
+        | null -> [||]
+        | headers -> headers
 
     let mutable builder = 
         Sdk.CreateTracerProviderBuilder()
@@ -70,21 +75,18 @@ let makeTracer (ctx: BindingContext) =
         builder <- builder.AddConsoleExporter()
     if useOltp then 
         builder <- builder.AddOtlpExporter(fun o -> 
-            o.Endpoint <- System.Uri (ctx.ParseResult.GetValueForOption oltpEndpointOption)
+            o.Endpoint <- System.Uri (parseResult.GetValue oltpEndpointOption)
             o.Headers <- String.concat "," oltpHeaders
         )
 
     builder.Build()
 
-root.SetHandler(upload, fileArgument, serviceNameOption, binder makeTracer)
+root.SetAction(fun parseResult ->
+    let filePath = parseResult.GetRequiredValue fileArgument
+    let serviceName = parseResult.GetValue serviceNameOption
+    use tracerProvider = makeTracer parseResult
+    upload filePath serviceName tracerProvider)
 
 [<EntryPoint>]
 let main argv =
-    CommandLineBuilder(root)
-        .UseParseErrorReporting(1)
-        .UseSuggestDirective()
-        .RegisterWithDotnetSuggest()
-        .UseHelp()
-        .Build()
-        .Parse(argv)
-        .Invoke()
+    root.Parse(argv).Invoke()
