@@ -46,8 +46,14 @@ module Ingest =
     let inline columnNumber x a = 
         tag "code.colno" (column x) a
     
-    let setType (x: NodeType)= 
-        tag "msbuild.type" (string x)
+    let setType x =
+        let value =
+            match x with
+            | Target -> "Target"
+            | Import -> "Import"
+            | NoImport -> "NoImport"
+            | Task -> "Task"
+        tag "msbuild.type" value
 
     let parseCondition (s: string) = 
         if not (String.IsNullOrEmpty s) && s.StartsWith "false condition; (" then
