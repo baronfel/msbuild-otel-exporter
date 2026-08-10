@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.0.3] - 2026-08-10
+
+### Added
+
+- Add Native AOT smoke tests that read a checked-in binlog on Linux, Windows, and macOS.
+
+### Changed
+
+- Publish the harness as Native AOT tool packages for Linux, Windows, and macOS on x64 and ARM64.
+- Build the Native AOT packages with the same workflow for pull requests and releases.
+- Exclude native debug symbols from the Native AOT packages.
+- Restore all packages from NuGet.org through package source mapping.
+- Manage direct and transitive dependency versions in `Directory.Packages.props`.
+- Update System.CommandLine and the Microsoft.Build dependencies.
+
+### Fixed
+
+- Preserve complete binlog data in Native AOT packages.
+
+### Removed
+
+- Stop publishing `msbuild.otel` as a separate NuGet package.
+
 ## [0.0.2] - 2026-08-07
 
 ### Added
@@ -8,23 +31,17 @@
 
 ### Changed
 
-- Publish the harness as Native AOT tool packages for Linux, Windows, and macOS on x64 and ARM64.
-- Build all Native AOT tool packages for pull requests.
-- Exclude native debug symbols from the Native AOT packages.
-- Restore all packages from NuGet.org through package source mapping.
 - Target .NET 10.
-- Manage direct and transitive dependency versions in `Directory.Packages.props`.
-- Update System.CommandLine, MSBuild Structured Logger, and OpenTelemetry dependencies.
+- Manage direct dependency versions in `Directory.Packages.props`.
+- Update MSBuild Structured Logger and OpenTelemetry dependencies.
 
 ### Fixed
 
-- Preserve complete binlog data in Native AOT packages.
 - Support current MSBuild binary log formats.
 - Preserve binary log parsing errors and handle logs without evaluation or execution phases.
 
 ### Removed
 
-- Stop publishing `msbuild.otel` as a separate NuGet package.
 - Remove the deprecated Zipkin exporter.
 
 ## [0.0.1] - 2022-01-30
