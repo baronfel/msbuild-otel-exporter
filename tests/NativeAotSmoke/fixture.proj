@@ -1,0 +1,5 @@
+<Project>
+  <Target Name="AotSmoke">
+    <Message Text="Native AOT binlog ingestion fixture" Importance="High" />
+  </Target>
+</Project>
